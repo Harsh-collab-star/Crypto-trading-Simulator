@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crypto Trading Simulator</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>₿</text></svg>">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+</head>
+<body>
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <div class="auth-logo-ring">₿</div>
+        <h1 id="al-title">CryptoSim Pro</h1>
+        <p><span id="al-real">REAL PRICES</span> <span style="color:var(--muted2)" id="al-paper">Paper Money Only</span></p>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Login</button>
+        <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
+      </div>
+      <div id="login-form">
+        <div class="form-group"><label class="form-label" id="lbl-user">Username</label><input class="form-input" id="l-user" type="text" placeholder="your_username" autocomplete="username"></div>
+        <div class="form-group"><label class="form-label" id="lbl-pass">Password</label><input class="form-input" id="l-pass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+        <button class="btn-gold" id="btn-login" onclick="doLogin()">Login →</button>
+      </div>
+      <div id="signup-form" style="display:none">
+        <div class="form-group"><label class="form-label" id="lbl-name">Full Name</label><input class="form-input" id="s-name" type="text" placeholder="Your Name"></div>
+        <div class="form-group"><label class="form-label" id="lbl-user2">Username</label><input class="form-input" id="s-user" type="text" placeholder="choose_username"></div>
+        <div class="form-group"><label class="form-label" id="lbl-pass2">Password</label><input class="form-input" id="s-pass" type="password" placeholder="create password"></div>
+        <button class="btn-gold" id="btn-signup" onclick="doSignup()">Create Account →</button>
+      </div>
+      <div class="auth-error" id="auth-err"></div>
+      <!-- Language on auth page -->
+      <div style="display:flex;gap:6px;margin-top:16px;justify-content:center;flex-wrap:wrap">
+        <button class="lang-btn active" onclick="setLang('en',this)">🇬🇧 EN</button>
+        <button class="lang-btn" onclick="setLang('hi',this)">🇮🇳 हि</button>
+        <button class="lang-btn" onclick="setLang('ja',this)">🇯🇵 日</button>
+        <button class="lang-btn" onclick="setLang('ru',this)">🇷🇺 RU</button>
+      </div>
+      <div class="demo-section">
+        <div class="demo-label" id="demo-label">Quick Demo Access</div>
+        <div class="demo-grid">
+          <button class="demo-btn" onclick="loginAs('trader1')"><span id="demo1-lbl">👤 Rahul Sharma — Trader</span><span class="demo-badge user">Demo</span></button>
+          <button class="demo-btn" onclick="loginAs('trader2')"><span id="demo2-lbl">👤 Priya Mehta — Trader</span><span class="demo-badge user">Demo</span></button>
+          <button class="demo-btn" onclick="loginAs('admin')"><span id="demo3-lbl">🔧 Admin Panel Access</span><span class="demo-badge admin">Admin</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-icon">₿</div>
+      <div><div class="sb-logo-text" id="sb-appname">CryptoSim</div><div class="sb-logo-sub" id="sb-appsub">Pro Edition</div></div>
+    </div>
+    <div class="sb-user">
+      <div class="sb-avatar" id="sb-av"></div>
+      <div><div class="sb-uname" id="sb-uname"></div><div class="sb-role" id="sb-role"></div></div>
+    </div>
+    <!-- Language switcher -->
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('en',this)">🇬🇧</button>
+      <button class="lang-btn" onclick="setLang('hi',this)">🇮🇳</button>
+      <button class="lang-btn" onclick="setLang('ja',this)">🇯🇵</button>
+      <button class="lang-btn" onclick="setLang('ru',this)">🇷🇺</button>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section" data-i="nav.dashboard">Trading</div>
+      <div class="sb-item active" onclick="goPage('dashboard')"><span class="sb-icon">📊</span><span data-i="nav.dashboard">Dashboard</span></div>
+      <div class="sb-item" onclick="goPage('market')"><span class="sb-icon">🌐</span><span data-i="nav.market">Market</span></div>
+      <div class="sb-item" onclick="goPage('trade')"><span class="sb-icon">💱</span><span data-i="nav.trade">Trade</span></div>
+      <div class="sb-item" onclick="goPage('portfolio')"><span class="sb-icon">💼</span><span data-i="nav.portfolio">Portfolio</span></div>
+      <div class="sb-item" onclick="goPage('history')"><span class="sb-icon">📜</span><span data-i="nav.history">History</span></div>
+      <div class="sb-section">Analytics</div>
+      <div class="sb-item" onclick="goPage('strategies')"><span class="sb-icon">🧠</span><span data-i="nav.strategies">Strategies</span></div>
+      <div class="sb-item" onclick="goPage('backtest')"><span class="sb-icon">🎮</span><span data-i="nav.backtest">Backtest</span></div>
+      <div class="sb-item" onclick="goPage('leaderboard')"><span class="sb-icon">🏆</span><span data-i="nav.leaderboard">Leaderboard</span></div>
+      <div class="sb-section">Tools</div>
+      <div class="sb-item" onclick="goPage('alerts')"><span class="sb-icon">🔔</span><span data-i="nav.alerts">Alerts</span><span class="sb-badge" id="alert-badge">0</span></div>
+      <div class="sb-item" onclick="goPage('news')"><span class="sb-icon">📰</span><span data-i="nav.news">News</span></div>
+      <div class="sb-item" onclick="goPage('learn')"><span class="sb-icon">📚</span><span data-i="nav.learn">Learn</span></div>
+      <div class="sb-item" id="admin-nav" style="display:none" onclick="goPage('admin')"><span class="sb-icon">⚙️</span><span data-i="nav.admin">Admin</span></div>
+    </div>
+    <div class="sb-footer">
+      <div class="sb-balance-card">
+        <div class="sb-balance-lbl" data-i="cash">Cash</div>
+        <div class="sb-balance-val" id="sb-cash">₹1,00,000</div>
+      </div>
+      <div style="text-align:center;font-size:9px;color:var(--muted);margin-top:8px" data-i="disclaimer">Paper money only</div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="ticker-zone"><div class="ticker-belt" id="ticker-belt"></div></div>
+      <div class="live-indicator"><div class="live-dot"></div><span id="live-lbl">LIVE</span></div>
+      <div class="topbar-actions">
+        <div class="ico-btn" id="notif-btn" onclick="toggleNotif()">🔔<div class="ndot"></div></div>
+        <button class="logout-btn" id="btn-logout" onclick="doLogout()">Logout</button>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="page on" id="page-dashboard">
+      <div class="pg-title" id="dash-title">Dashboard</div>
+      <div class="price-loading" id="price-loading">Loading real-time prices from CoinGecko...</div>
+      <div class="g4 mb14" id="dash-stats"></div>
+      <div class="g2 mb14">
+        <div class="card"><div class="card-hd" data-i="portfolioGrowth">Portfolio Growth</div><canvas id="ch-portfolio" height="150"></canvas></div>
+        <div class="card"><div class="card-hd" data-i="holdingsBreakdown">Holdings Breakdown</div><canvas id="ch-pie" height="150"></canvas></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="card-hd" data-i="recentTrades">Recent Trades</div><div id="dash-recent"></div></div>
+        <div class="card"><div class="card-hd" data-i="topMovers">Top Movers</div><div id="dash-movers"></div></div>
+      </div>
+    </div>
+
+    <!-- MARKET -->
+    <div class="page" id="page-market">
+      <div class="pg-title"><em data-i="liveMarket">Live Market</em></div>
+      <div class="card mb14 mkt-wrap">
+        <table class="mkt-table">
+          <thead><tr><th>#</th><th data-i="coin">Coin</th><th data-i="price">Price (₹)</th><th data-i="change24h">24h %</th><th data-i="marketCap">Market Cap</th><th data-i="volume">Volume</th><th>7D</th><th data-i="action">Action</th></tr></thead>
+          <tbody id="mkt-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TRADE -->
+    <div class="page" id="page-trade">
+      <div class="pg-title">
+        <em data-i="placeOrder">Place Order</em>
+        <div class="trade-tabs" style="display:inline-flex;margin-left:20px;background:var(--bg3);padding:4px;border-radius:var(--r);vertical-align:middle;">
+          <button class="t-tab active" id="ttab-spot" onclick="switchTradeTab('spot')" style="padding:6px 14px;border-radius:6px;border:none;background:var(--bg4);color:var(--text);font-weight:700;cursor:pointer;font-family:var(--sans);font-size:12px;">Spot</button>
+          <button class="t-tab" id="ttab-options" onclick="switchTradeTab('options')" style="padding:6px 14px;border-radius:6px;border:none;background:transparent;color:var(--muted2);font-weight:700;cursor:pointer;font-family:var(--sans);font-size:12px;">Options</button>
+        </div>
+      </div>
+      
+      <div id="trade-spot-view">
+        <div class="trade-layout">
+          <div class="chart-card">
+            <div class="chart-hd">
+              <div><div class="chart-coin-name" id="tc-name">Bitcoin (BTC)</div><div class="chart-price-big" id="tc-price">₹0</div><div class="chart-chg" id="tc-chg">—</div></div>
+              <div class="period-row">
+                <button class="pbtn active" onclick="setPeriod('1D',this)">1D</button>
+                <button class="pbtn" onclick="setPeriod('1W',this)">1W</button>
+                <button class="pbtn" onclick="setPeriod('1M',this)">1M</button>
+                <button class="pbtn" onclick="setPeriod('1Y',this)">1Y</button>
+              </div>
+            </div>
+            <canvas id="ch-trade" height="220"></canvas>
+            <div class="ind-grid" id="ind-grid"></div>
+          </div>
+          <div class="order-card">
+            <div class="o-tabs">
+            <button class="o-tab b active" onclick="setOrderType('buy')" id="tab-buy" data-i="buy">BUY</button>
+            <button class="o-tab s" onclick="setOrderType('sell')" id="tab-sell" data-i="sell">SELL</button>
+          </div>
+          <div class="card-hd" data-i="selectCoin">Select Coin</div>
+          <div class="coin-pills" id="coin-pills"></div>
+          <div class="mini-chart-card">
+            <div class="mini-chart-hd" data-i="dayChart">Price Graph</div>
+            <canvas id="ch-mini" height="120"></canvas>
+          </div>
+          <div class="inp-grp">
+            <div class="inp-row-lbl"><span data-i="amount">Amount (₹)</span><span id="avail-lbl">Available: ₹0</span></div>
+            <input class="t-input" type="number" id="order-amt" placeholder="0.00" oninput="updateSummary()">
+            <div class="pct-row">
+              <button class="pct-btn" onclick="setPct(25)">25%</button>
+              <button class="pct-btn" onclick="setPct(50)">50%</button>
+              <button class="pct-btn" onclick="setPct(75)">75%</button>
+              <button class="pct-btn" onclick="setPct(100)">Max</button>
+            </div>
+          </div>
+          <div class="o-summary">
+            <div class="sum-row"><span class="sum-lbl" data-i="coin">Coin</span><span class="sum-val" id="os-coin">—</span></div>
+            <div class="sum-row"><span class="sum-lbl" data-i="livePrice">Live Price</span><span class="sum-val" id="os-price">—</span></div>
+            <div class="sum-row"><span class="sum-lbl" data-i="quantity">Quantity</span><span class="sum-val" id="os-qty">—</span></div>
+            <div class="sum-row"><span class="sum-lbl" data-i="fee">Fee (0.1%)</span><span class="sum-val" id="os-fee">—</span></div>
+            <div class="sum-div"></div>
+            <div class="sum-row"><span class="sum-lbl" style="color:var(--text);font-weight:800" data-i="total">Total</span><span class="sum-val" id="os-total">—</span></div>
+          </div>
+          <button class="exec-btn b" id="exec-btn" onclick="executeTrade()">Buy BTC</button>
+        </div>
+      </div>
+      </div>
+
+      <div id="trade-options-view" style="display:none;">
+        <div class="card mb14">
+          <div class="chart-hd">
+            <div><div class="chart-coin-name" id="oc-name">Bitcoin (BTC) Option Chain</div><div class="chart-price-big" id="oc-price">₹0</div><div style="font-size:12px;color:var(--muted2);margin-top:2px;">Simulated Data based on live spot price</div></div>
+            <div class="period-row">
+              <select class="form-input" id="oc-expiry" onchange="renderOptionChain()" style="width:auto;padding:6px 12px;font-size:12px;">
+                <option value="0">Today</option>
+                <option value="1">Tomorrow</option>
+                <option value="7">Next Week</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="overflow-x:auto;">
+          <table class="oc-table" style="width:100%;border-collapse:collapse;text-align:center;">
+            <thead>
+              <tr>
+                <th colspan="3" style="background:rgba(5,211,139,.1);color:var(--green);padding:8px;border:1px solid var(--border);">CALLS</th>
+                <th style="padding:8px;background:var(--bg3);border:1px solid var(--border);">STRIKE</th>
+                <th colspan="3" style="background:rgba(240,78,108,.1);color:var(--red);padding:8px;border:1px solid var(--border);">PUTS</th>
+              </tr>
+              <tr>
+                <th style="padding:8px;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);">Vol</th>
+                <th style="padding:8px;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);">Bid</th>
+                <th style="padding:8px;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);">Ask</th>
+                <th style="padding:8px;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);background:var(--bg3);">Price (₹)</th>
+                <th style="padding:8px;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);">Bid</th>
+                <th style="padding:8px;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);">Ask</th>
+                <th style="padding:8px;font-size:10px;color:var(--muted);border-bottom:1px solid var(--border);">Vol</th>
+              </tr>
+            </thead>
+            <tbody id="oc-tbody">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PORTFOLIO -->
+    <div class="page" id="page-portfolio">
+      <div class="pg-title"><em data-i="portfolio">Portfolio</em></div>
+      <div class="g4 mb14" id="port-stats"></div>
+      <div class="card mb14" style="overflow-x:auto">
+        <div class="card-hd" data-i="holdings">Holdings</div>
+        <table class="h-table"><thead><tr>
+          <th data-i="coin">Asset</th><th data-i="quantity">Quantity</th><th data-i="avgBuy">Avg Buy</th>
+          <th data-i="currentPrice">Current</th><th data-i="currentValue">Value</th><th data-i="pnl">P&L</th><th data-i="allocation">Alloc</th>
+        </tr></thead><tbody id="port-tbody"></tbody></table>
+      </div>
+      <div class="card"><div class="card-hd" data-i="pnl">P&L Chart</div><canvas id="ch-pnl" height="130"></canvas></div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="page" id="page-history">
+      <div class="pg-title"><em data-i="history">Trade History</em></div>
+      <div class="hist-filters mb14">
+        <button class="filt-btn active" onclick="filtHist('all',this)" data-i="all">All</button>
+        <button class="filt-btn" onclick="filtHist('buy',this)">Buy</button>
+        <button class="filt-btn" onclick="filtHist('sell',this)">Sell</button>
+        <button class="filt-btn" onclick="filtHist('BTC',this)">BTC</button>
+        <button class="filt-btn" onclick="filtHist('ETH',this)">ETH</button>
+        <button class="filt-btn" onclick="filtHist('SOL',this)">SOL</button>
+        <input class="search-inp" id="hist-search" placeholder="🔍 Search..." oninput="renderHistory()">
+        <button class="filt-btn" onclick="exportCSV()" style="margin-left:auto" data-i="export">Export CSV</button>
+      </div>
+      <div class="card" style="overflow-x:auto">
+        <table class="hist-table"><thead><tr>
+          <th data-i="date">Date & Time</th><th data-i="type">Type</th><th data-i="coin">Coin</th>
+          <th data-i="price">Price</th><th data-i="quantity">Qty</th><th data-i="amount">Amount</th><th data-i="fee">Fee</th><th data-i="pnl">P&L</th>
+        </tr></thead><tbody id="hist-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- STRATEGIES -->
+    <div class="page" id="page-strategies">
+      <div class="pg-title"><em data-i="strategies">Strategies</em></div>
+      <div class="strat-grid mb14" id="strat-grid"></div>
+      <div id="strat-detail" style="display:none" class="card"></div>
+    </div>
+
+    <!-- BACKTEST -->
+    <div class="page" id="page-backtest">
+      <div class="pg-title"><em data-i="backtest">Backtest</em></div>
+      <div class="bt-layout">
+        <div class="bt-ctrl">
+          <div class="card-hd" data-i="configureBacktest">Configure</div>
+          <div class="form-group mb14"><label class="form-label" data-i="strategy">Strategy</label>
+            <select class="form-input" id="bt-strat">
+              <option value="ma" data-i="stratMA">Moving Average</option>
+              <option value="rsi" data-i="stratRSI">RSI Reversal</option>
+              <option value="trend" data-i="stratTrend">Trend Following</option>
+              <option value="bh" data-i="stratBH">Buy & Hold</option>
+            </select>
+          </div>
+          <div class="form-group mb14"><label class="form-label" data-i="coin">Coin</label>
+            <select class="form-input" id="bt-coin"><option>BTC</option><option>ETH</option><option>SOL</option><option>BNB</option></select>
+          </div>
+          <div class="form-group mb14"><label class="form-label" data-i="period">Period</label>
+            <select class="form-input" id="bt-days">
+              <option value="30" data-i="days30">30 Days</option>
+              <option value="90" selected data-i="days90">90 Days</option>
+              <option value="180" data-i="days180">180 Days</option>
+              <option value="365" data-i="days365">1 Year</option>
+            </select>
+          </div>
+          <div class="form-group mb14"><label class="form-label" data-i="capital">Capital (₹)</label><input class="form-input" id="bt-cap" type="number" value="100000"></div>
+          <button class="btn-gold" onclick="runBacktest()" id="btn-runbt" data-i="runBacktest">▶ Run</button>
+        </div>
+        <div class="bt-res" id="bt-res-area">
+          <div class="empty"><div class="empty-i">🎮</div><p data-i="configureBacktest">Configure and run a backtest</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEADERBOARD -->
+    <div class="page" id="page-leaderboard">
+      <div class="pg-title">🏆 <em data-i="leaderboard">Leaderboard</em></div>
+      <div class="card mb14"><canvas id="ch-lb" height="110"></canvas></div>
+      <div class="card" style="overflow-x:auto">
+        <table class="lb-table"><thead><tr>
+          <th data-i="rankLabel">Rank</th><th data-i="trader">Trader</th><th data-i="portfolioValue">Portfolio</th>
+          <th data-i="pnl">P&L</th><th data-i="returnPct">Return%</th><th data-i="trades">Trades</th><th data-i="winRate">Win Rate</th>
+        </tr></thead><tbody id="lb-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- ALERTS -->
+    <div class="page" id="page-alerts">
+      <div class="pg-title"><em data-i="alerts">Price Alerts</em></div>
+      <div class="al-form mb14">
+        <div class="card-hd" data-i="createAlert">Create Alert</div>
+        <div class="g3 mb14">
+          <div class="form-group"><label class="form-label" data-i="coin">Coin</label><select class="form-input" id="al-coin"><option>BTC</option><option>ETH</option><option>SOL</option><option>BNB</option><option>XRP</option><option>DOGE</option></select></div>
+          <div class="form-group"><label class="form-label" data-i="condition">Condition</label><select class="form-input" id="al-cond"><option value="above" data-i="above">Price rises above</option><option value="below" data-i="below">Price falls below</option></select></div>
+          <div class="form-group"><label class="form-label" data-i="targetPrice">Target ₹</label><input class="form-input" id="al-price" type="number" placeholder="e.g. 5000000"></div>
+        </div>
+        <button class="btn-gold" style="width:auto;padding:10px 22px" onclick="createAlert()" id="btn-al" data-i="addAlert">+ Add Alert</button>
+      </div>
+      <div class="al-list" id="al-list"></div>
+    </div>
+
+    <!-- NEWS -->
+    <div class="page" id="page-news">
+      <div class="pg-title"><em data-i="news">Crypto News</em></div>
+      <div class="news-grid" id="news-grid"></div>
+    </div>
+
+    <!-- LEARN -->
+    <div class="page" id="page-learn">
+      <div id="learn-list">
+        <div class="pg-title"><em data-i="learn">Trading School</em></div>
+        <div class="learn-grid" id="learn-grid"></div>
+      </div>
+      <div class="learn-detail" id="learn-detail">
+        <button class="back-btn" onclick="closeTopic()" id="btn-back-learn">← Back</button>
+        <div class="lesson-card" id="lesson-content"></div>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="page" id="page-admin">
+      <div class="pg-title">⚙️ <em data-i="admin">Admin Panel</em></div>
+      <div class="ga mb14" id="admin-stats-grid"></div>
+      <div class="card mb14" style="overflow-x:auto">
+        <div class="card-hd" data-i="userMgmt">User Management</div>
+        <table class="u-table"><thead><tr>
+          <th>User</th><th>Role</th><th data-i="cash">Cash</th><th data-i="portfolioValue">Portfolio</th><th data-i="trades">Trades</th><th>Joined</th><th>Actions</th>
+        </tr></thead><tbody id="admin-tbody"></tbody></table>
+      </div>
+      <div class="g2">
+        <div class="card">
+          <div class="card-hd">Simulation Controls</div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+            <button class="btn-gold" style="background:var(--bg3);border:1px solid var(--border);color:var(--text);box-shadow:none" onclick="adminReset()" id="btn-rst" data-i="resetAll">Reset All</button>
+            <button class="btn-gold" style="background:rgba(5,211,139,.08);border:1px solid rgba(5,211,139,.25);color:var(--green);box-shadow:none" onclick="adminBull()" id="btn-bull" data-i="bullRun">Bull Run</button>
+            <button class="btn-gold" style="background:rgba(240,78,108,.08);border:1px solid rgba(240,78,108,.25);color:var(--red);box-shadow:none" onclick="adminCrash()" id="btn-crash" data-i="crash">Crash</button>
+          </div>
+        </div>
+        <div class="card"><div class="card-hd" data-i="activityLog">Activity Log</div><div id="act-log" style="font-family:var(--mono);font-size:10px;color:var(--muted2);max-height:160px;overflow-y:auto"></div></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+</div><!-- /app -->
+
+<!-- NOTIFICATIONS -->
+<div id="notif-panel">
+  <div class="np-hd"><h3 id="notif-title">Notifications</h3><button class="np-clear" onclick="clearNotifs()" id="btn-clear-notif">Clear all</button></div>
+  <div class="np-list" id="notif-list"></div>
+</div>
+
+<!-- GLOBAL CHAT WIDGET -->
+<button class="chat-toggle-btn" id="chat-toggle-btn" onclick="toggleChat()">
+  <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16"><path d="M2 2a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2.5a1 1 0 0 1 .8.4l1.9 2.533a1 1 0 0 0 1.6 0l1.9-2.533a1 1 0 0 1 .8-.4H14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H2z"/></svg>
+  <span class="chat-badge" id="chat-badge" style="display:none">0</span>
+</button>
+
+<div class="chat-widget" id="chat-widget">
+  <div class="chat-hd">
+    <div>
+      <span class="chat-title">Trollbox</span>
+      <span class="chat-status">● Live</span>
+    </div>
+    <button class="chat-close" onclick="toggleChat()">✕</button>
+  </div>
+  <div class="chat-body" id="chat-body">
+    <!-- Messages appended here -->
+  </div>
+  <div class="chat-input-area">
+    <input type="text" id="chat-input" placeholder="Type a message..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+    <button class="chat-send" onclick="sendChatMessage()">Send</button>
+  </div>
+</div>
+
+<div id="toast-wrap"></div>
+</body>
+<script src="script.js"></script>
+</html>
